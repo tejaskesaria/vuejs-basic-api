@@ -4,10 +4,13 @@
     <input type="text" name="username" id="username" placeholder="Username" v-model="username">
     <input type="email" name="email" id="email" placeholder="Email" v-model="email">
     <input type="password" name="password" id="password" placeholder="Password" v-model="password">
-    <button type="submit" @click="register">Register</button>
+    <button type="submit" @click="checkfields">Register</button>
+    <br>
+    <button @click="goToLogin">Login</button>
 </div>
 </template>
 <script>
+import axios from 'axios';
 export default {
   name: 'SignUp',
   data() {
@@ -18,20 +21,44 @@ export default {
     }
   },
   methods: {
-    register() {
-    //   const user = {
-    //     id: Date.now(),
-    //     name: this.username,
-    //     email: this.email,
-    //     password: this.password
-    //   };
-      // Here you would typically make an API call to register the user
-      console.log('User registered:', this.username, this.email, this.password);
+    goToLogin(){
+        this.$router.push({ name: 'LoginUser' });
+    },
+   checkfields() {
+        if (this.username === '' || this.email === '' || this.password === '') {
+            alert('Please fill in all fields.');
+        } else {
+            this.register();
+        }
+    }, 
+   async register() {
+        let result = await axios.post('http://localhost:3000/user', {
+            name: this.username,
+            email: this.email,
+            password: this.password
+        });
+        // Handle success or errors here
+        if (result.status === 201) {
+            alert('Registration successful!');
+            this.username = '';
+            this.email = '';
+            this.password = '';
+            localStorage.setItem('user', JSON.stringify(result.data.name));
+            this.$router.push({name: 'Home'});
+        } else {
+            alert('Registration failed. Please try again.');
+        }
+    }
+  },
+  mounted() {
+    let user = localStorage.getItem('user');
+    if (user) {
+      this.$router.push({ name: 'Home' });
     }
   }
 }
 </script>
-<style scoped>
+<style>
 .register-form {
     display: flex;
     flex-direction: column;
